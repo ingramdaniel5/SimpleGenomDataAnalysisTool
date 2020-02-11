@@ -1,5 +1,5 @@
-from Profile import GenomeProfile as NP
-from Window import GenomeWindow as WS
+from Profile import GenomeProfile as Profile
+from Window import GenomeWindow as Window
 from WindowDataSet import WindowDataSet as WSet
 
 ###############################################################
@@ -20,59 +20,45 @@ class ProfileDataSet:
 
     # Constructor called as first line of the input set is read (Only available data is the name)
     def __init__(self, SetName):
+        print("Making dataset by name: " + SetName)
         self.DataSetName = SetName
         self.WindowSamples = WSet()
-        self.ProfileDataSet = []
 
     def AddProfileByObject(self, Profile):
         self.ProfileDataSet.append(Profile)
 
+    def DivideLineAndCreateProfiles(self, line):
+        print("Dividing initial Line and making profiles")
+        # Column count utilized for managing the first few columns
+        columnCount = 0
+        for ProfileID in line.split():
+            # Excludes the first three columns that describe nomenclature
+            if columnCount >= 3:
+                newProfile = Profile(ProfileID)
+                self.AddProfileByObject(newProfile)
+            columnCount = columnCount + 1
 
-    def AddWindow(self, line, windowIndex):
-        rowStart = 0
-        rowEnd = 0
-        zeroCount = 0
-        currentProfileIndex = 0
-        sampleColumn = 0
-        for value in line.split():
-            if sampleColumn == 0:
-                self.sampleID = value
-            else:
-                if sampleColumn == 1:
-                    rowStart = value
-                elif sampleColumn == 2:
-                    rowEnd = value
-                else: # Starts the actual occurance intake of the window
-                    if value == 1:
-                        print("Occurance Found in profile index: " + currentProfileIndex)
-                        self.ProfileDataSet[currentProfileIndex].occuranceInWindowFound(windowIndex)
-                    elif value == 0:
-                        zeroCount = zeroCount + 1
-                    else:
-                        print ("Error! unexpected Value: " + value)
-                    currentProfileIndex = currentProfileIndex + 1
-        # newWindow = WS(line)
-        # if newWindow.isValidData():
-        #     self.WindowSamples.addWindowByObject(newWindow)
-        #     currentWindowIndex = self.WindowSamples.getLastIndex()
-        #     for occurance in newWindow.profilePresenceIndecies:
-        #         # print("Mapping Occur Found on index: " + str(occurance))
-        #         # print("Profile Ammount: " + str(len(self.ProfileDataSet)))
-        #         # print("In Data Set: " + self.DataSetName)
-        #         # print("Mapped profile ID: " + self.ProfileDataSet[occurance].profileID)
-        #         self.ProfileDataSet[occurance].occuranceInWindowFound(currentWindowIndex)
-        # else:
-        #     print("Invalid Sample Found")
+    def AddWindowByLine(self, line, windowIndex):
+        # print("Adding new potential window: " + str(windowIndex))
+        newWindow = Window(line)
+        if newWindow.isValidData():
+            self.WindowSamples.addWindowByObject(newWindow)
+            currentWindowIndex = self.WindowSamples.getLastIndex()
+            # Loops through all of the matching profile indecies found and adds them to the profile object.
+            for occuranceIndex in newWindow.profilePresenceIndecies:
+                self.ProfileDataSet[occuranceIndex].occuranceInWindowFound(currentWindowIndex)
+        else:
+            print("Invalid Sample Window Found")
 
     def CalculateSummaryValues(self):
         self.AverageOccurrence = self.CalculateAverageOccurrence()
         self.LargestProfileIndex = self.FindLargestProfileIndex()
         self.SmallestProfileIndex = self.FindSmallestProfileIndex()
-        # self.CalculateProfileRanks(5)
+        self.CalculateProfileRanks(5)
 
     # WARNING! Screws up index tracking for sub components
     def SortSetBySize(self):
-        self.ProfileDataSet.sort(key=NP.GetProfileSize)
+        self.ProfileDataSet.sort(key=Profile.GetProfileSize)
 
     def GetSetSize(self):
         return len(self.ProfileDataSet)
@@ -83,32 +69,44 @@ class ProfileDataSet:
             occurrenceSum = occurrenceSum + Profile.GetProfileSize()
         return occurrenceSum /(len(self.ProfileDataSet))
 
+
+
+
+
+
+
+
+
     def CalculateProfileRanks(self, RankCount):
         # Find smallest index up here because it is used twice:
         smallestIndex = self.FindSmallestProfileIndex()
         largestIndex = self.FindLargestProfileIndex()
         # Finds Range of data set Profile Size and divides by RankAmount
-        ZonesSize = (self.ProfileDataSet[largestIndex].occuranceAmount - self.ProfileDataSet[smallestIndex].occuranceAmount)/RankCount
-        self.ProfileRankCounts = []
+        ZonesSize = (self.ProfileDataSet[largestIndex].occuranceAmount)/RankCount
+        self.ProfileRankIndecies = []
         x = 0
         # Loops through and appends empty arrays to the rank counts array
         while x < RankCount:
-            self.ProfileRankCounts.append([])
+            newRankArray = []
+            self.ProfileRankIndecies.append(newRankArray)
             x = x + 1
         # Loops through all of the Profiles Stored and assigns them ranks
         CurrentPIndex = 0
         SetCount = self.GetSetSize()
         while CurrentPIndex < SetCount:
             # For each profile, loop through until it qualifies for a certain rank
-            rank = 0
-            print("ZoneSize = " + str(ZonesSize))
-            print("ZoneSize*Rank = " + str(rank*ZonesSize))
-            while (rank * ZonesSize) <= self.ProfileDataSet[CurrentPIndex].GetProfileSize() and rank >= len(self.ProfileRankIndecies) - 1:
+            rank = 1
+            while (rank * ZonesSize) < self.ProfileDataSet[CurrentPIndex].GetProfileSize() and rank <= len(self.ProfileRankIndecies):
                 # Increment through all the ranks until the occurance amount is less then the current rank's limit
                 rank = rank + 1
-                # print("Not that rank for " + str(CurrentPIndex))
+            #print("Rank of profile found:  " + str(rank))
             self.ProfileRankIndecies[rank - 1].append(CurrentPIndex)
             CurrentPIndex = CurrentPIndex + 1
+
+
+
+
+
 
 
 
@@ -149,7 +147,7 @@ class ProfileDataSet:
         print("Profile Rank Count:___________")
         currentRank = 1
         for rankArray in self.ProfileRankIndecies:
-            print("Rank " + str(currentRank) + ": " + len(rankArray))
+            print("Rank " + str(currentRank) + ": " + str(len(rankArray)))
             currentRank = currentRank + 1
         print("______________________________________________")
         print("")

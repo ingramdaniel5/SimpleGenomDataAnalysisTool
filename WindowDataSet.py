@@ -4,13 +4,13 @@ from Window import GenomeWindow as WS
 class WindowDataSet:
 
     # Public Class Properties
-    WindowDataSet = []
     SetCount = 0
 
 
     # Constructor takes a row in the file as an input
     def __init__(self):
         self.SetCount = 0
+        self.WindowDataSet = []
 
     # Helper method for validating the window of the sample
     def isValidData(self, window):

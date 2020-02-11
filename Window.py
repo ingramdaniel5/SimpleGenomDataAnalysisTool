@@ -10,12 +10,13 @@ class GenomeWindow:
     rowEnd = -1
     zeroCount = 0
     oneCount = 0
-
     profilePresenceIndecies = []
-
 
     # Constructor takes a row in the file as an input
     def __init__(self, line):
+        self.profilePresenceIndecies = []
+        self.windowSize = 0
+
         currentProfileIndex = 0
         sampleColumn = 0
         # Handles the first three columns respective data
@@ -27,19 +28,22 @@ class GenomeWindow:
                     self.rowStart = value
                 elif sampleColumn == 2:
                     self.rowEnd = value
-                else: # Starts the actual occurance intake of the window
-                    if value == str(1):
+                else: # Starts the actual occurrence intake of the window
+                    if value == "1":
                         self.oneCount = self.oneCount + 1
-                        # self.profilePresenceIndecies.append(currentProfileIndex)
-                        # currentProfileIndex = currentProfileIndex + 1
+                        self.windowSize = self.windowSize + 1
+                        self.profilePresenceIndecies.append(currentProfileIndex)
+                        currentProfileIndex = currentProfileIndex + 1
                         # print("Occur Found on index: " + str(currentProfileIndex))
-                    elif value == str(0):
+                    elif value == "0":
                         self.zeroCount = self.zeroCount + 1
                         currentProfileIndex = currentProfileIndex + 1
                     else:
                         print ("Error! unexpected Value: " + value)
             sampleColumn = sampleColumn + 1
         # self.findRank()
+        # print("Indecies Array length = " + str(len(self.profilePresenceIndecies)))
+        # print("Window Row Size Count: " + str(self.oneCount))
 
     # Method for easy display of Sample Window Properties
     def printSampleWindowSummary(self):
@@ -51,7 +55,6 @@ class GenomeWindow:
 
     # Helper method for validating the window of the sample
     def isValidData(self):
-        # print("Window Size : " + str(self.windowSize) + '\n')
         if self.windowSize >= 100:
             return False
         else:

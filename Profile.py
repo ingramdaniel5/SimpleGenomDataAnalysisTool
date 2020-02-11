@@ -8,8 +8,10 @@ class GenomeProfile:
     IndeciesOfValidWindowSamples = []
 
     # Constructor called as first line of the input set is read (Only available data is the name)
-    def __init__(self, ID):
-        self.profileID = ID
+    def __init__(self, profileID):
+        # print("Making Profile: " + profileID)
+        self.profileID = profileID
+        self.IndeciesOfValidWindowSamples = []
 
     # Helper method called to handle the detection of a 1 in a window for this column
     def occuranceInWindowFound(self, windowIndex):
@@ -18,10 +20,6 @@ class GenomeProfile:
 
     def GetProfileSize(self):
         return self.occuranceAmount
-
-    # Decided rank is best done by an external method to the data set
-    # def findRank(self):
-    #
 
      # Boolean operators for comparing the profiles to one another:
     def __gt__(self, other):
