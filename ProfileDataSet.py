@@ -48,7 +48,19 @@ class ProfileDataSet:
             for occuranceIndex in newWindow.profilePresenceIndecies:
                 self.ProfileDataSet[occuranceIndex].occuranceInWindowFound(currentWindowIndex)
         else:
-            print("Invalid Sample Window Found")
+            print(self.DataSetName + ": Invalid Sample Window Found in data set!")
+
+    def AddWindowByLineWithRangeFilter(self, line, windowIndex, rangeStart, RangeEnd):
+        # print("Adding new potential window: " + str(windowIndex))
+        newWindow = Window(line)
+        if newWindow.isValidData():
+            self.WindowSamples.addWindowByObject(newWindow)
+            currentWindowIndex = self.WindowSamples.getLastIndex()
+            # Loops through all of the matching profile indecies found and adds them to the profile object.
+            for occuranceIndex in newWindow.profilePresenceIndecies:
+                self.ProfileDataSet[occuranceIndex].occuranceInWindowFound(currentWindowIndex)
+        else:
+            print(self.DataSetName + ": Invalid Sample Window Found in data set!")
 
     def CalculateSummaryValues(self):
         self.AverageOccurrence = self.CalculateAverageOccurrence()
@@ -68,13 +80,6 @@ class ProfileDataSet:
         for Profile in self.ProfileDataSet:
             occurrenceSum = occurrenceSum + Profile.GetProfileSize()
         return occurrenceSum /(len(self.ProfileDataSet))
-
-
-
-
-
-
-
 
 
     def CalculateProfileRanks(self, RankCount):
@@ -103,14 +108,6 @@ class ProfileDataSet:
             self.ProfileRankIndecies[rank - 1].append(CurrentPIndex)
             CurrentPIndex = CurrentPIndex + 1
 
-
-
-
-
-
-
-
-
     def FindLargestProfileIndex(self):
         largestIndex = 0
         x = 0
@@ -131,6 +128,11 @@ class ProfileDataSet:
             x = x + 1
         return smallestIndex
 
+
+
+
+
+
     # Method for easy display of Sample Window Properties
     def printProfileDataSetSummaryInTerminal(self):
         if self.LargestProfileIndex == -1 or self.LargestProfileIndex == -1 or self.AverageOccurrence == 0:
@@ -139,6 +141,7 @@ class ProfileDataSet:
         print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         print("Data Summary for " + self.DataSetName)
         print("Profiles Available: " + str(self.GetSetSize()))
+        print("Window Sample Count: " + str(self.WindowSamples.GetSetSize()))
         print("Average occurrences Detected Per NP: " + str(self.AverageOccurrence))
         print("Largest Profile Found: " + self.ProfileDataSet[self.LargestProfileIndex].profileID + " with: " + str(self.ProfileDataSet[self.LargestProfileIndex].occuranceAmount) + " sample occurrences")
         print("Smallest profile found: " + self.ProfileDataSet[self.SmallestProfileIndex].profileID + " with: " + str(self.ProfileDataSet[self.SmallestProfileIndex].occuranceAmount) + " sample occurrences")

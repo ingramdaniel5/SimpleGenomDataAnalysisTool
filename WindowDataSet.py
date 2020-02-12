@@ -27,6 +27,9 @@ class WindowDataSet:
         self.WindowDataSet.append(NewWindow)
         self.SetCount = self.SetCount + 1
 
+    def GetSetSize(self):
+        return len(self.WindowDataSet)
+
     def addWindowByObject(self, NewWindow):
         self.WindowDataSet.append(NewWindow)
         self.SetCount = self.SetCount + 1
