@@ -2,6 +2,8 @@ from Profile import GenomeProfile as Profile
 from Window import GenomeWindow as Window
 from WindowDataSet import WindowDataSet as WSet
 
+import numpy as np
+
 ###############################################################
 # Object for managing and handling a group od Genome Profiles
 class ProfileDataSet:
@@ -16,6 +18,7 @@ class ProfileDataSet:
 
     DefaultRanksAmount = 5
     ProfileRankIndecies = []
+    ProfileJaccardMarix = []
 
 
     # Constructor called as first line of the input set is read (Only available data is the name)
@@ -23,6 +26,8 @@ class ProfileDataSet:
         print("Making dataset by name: " + SetName)
         self.DataSetName = SetName
         self.WindowSamples = WSet()
+        self.ProfileDataSet = []
+        self.ProfileJaccardMarix = []
 
     def AddProfileByObject(self, Profile):
         self.ProfileDataSet.append(Profile)
@@ -38,6 +43,44 @@ class ProfileDataSet:
                 self.AddProfileByObject(newProfile)
             columnCount = columnCount + 1
 
+    def FindAllJaccardSimilaritiesUnNormalized(self):
+        currentRow = 0
+        currentValue = 0
+        totalValuesToFind = len(self.ProfileDataSet) * len(self.ProfileDataSet)
+        self.ProfileJaccardMarix = []
+        for profileRow in self.ProfileDataSet:
+            newRow = []
+            self.ProfileJaccardMarix.append(newRow)
+            for profileColumn in self.ProfileDataSet:
+                self.ProfileJaccardMarix[currentRow].append(profileRow.JaccardSimlarityIndexUnNormalized(profileColumn))
+                currentValue = currentValue + 1
+                print("Jaccard Score Progress: " + currentValue + "/" + totalValuesToFind)
+            currentRow = currentRow + 1
+
+    def FindAllJaccardSimilaritiesNormalized(self):
+        currentRow = 0
+        currentValue = 0
+        totalValuesToFind = len(self.ProfileDataSet) * len(self.ProfileDataSet)
+        self.ProfileJaccardMarix = []
+        for profileRow in self.ProfileDataSet:
+            newRow = []
+            self.ProfileJaccardMarix.append(newRow)
+            for profileColumn in self.ProfileDataSet:
+                self.ProfileJaccardMarix[currentRow].append(profileRow.JaccardSimlarityIndexNormalized(profileColumn))
+                currentValue = currentValue + 1
+                print("Jaccard Score Progress: " + str(currentValue) + "/" + str(totalValuesToFind))
+            currentRow = currentRow + 1
+            if currentRow == 5:
+                break
+        np.savetxt('./DataSets/Hist1JaccardMatrix.txt', self.ProfileJaccardMarix)
+
+    def printJaccMatrix(self):
+        for i in range(len(self.ProfileJaccardMarix)):
+            for j in range(len(self.ProfileJaccardMarix[i])):
+                print(self.ProfileJaccardMarix[i][j], end=' ')
+            print()
+
+
     def AddWindowByLine(self, line, windowIndex):
         # print("Adding new potential window: " + str(windowIndex))
         newWindow = Window(line)
@@ -50,23 +93,24 @@ class ProfileDataSet:
         else:
             print(self.DataSetName + ": Invalid Sample Window Found in data set!")
 
-    def AddWindowByLineWithRangeFilter(self, line, windowIndex, rangeStart, RangeEnd):
+    def AddWindowByLineWithRangeFilter(self, line, windowIndex, RangeStart, RangeEnd):
         # print("Adding new potential window: " + str(windowIndex))
         newWindow = Window(line)
-        if newWindow.isValidData():
+        if newWindow.isValidData() and int(newWindow.rowStart) <= RangeStart and int(newWindow.rowEnd) <= RangeEnd:
             self.WindowSamples.addWindowByObject(newWindow)
             currentWindowIndex = self.WindowSamples.getLastIndex()
             # Loops through all of the matching profile indecies found and adds them to the profile object.
             for occuranceIndex in newWindow.profilePresenceIndecies:
                 self.ProfileDataSet[occuranceIndex].occuranceInWindowFound(currentWindowIndex)
-        else:
-            print(self.DataSetName + ": Invalid Sample Window Found in data set!")
+        # else:
+        #    print(self.DataSetName + ": Invalid Sample Window Found in data set!")
 
     def CalculateSummaryValues(self):
         self.AverageOccurrence = self.CalculateAverageOccurrence()
         self.LargestProfileIndex = self.FindLargestProfileIndex()
         self.SmallestProfileIndex = self.FindSmallestProfileIndex()
         self.CalculateProfileRanks(5)
+        self.FindAllJaccardSimilaritiesNormalized()
 
     # WARNING! Screws up index tracking for sub components
     def SortSetBySize(self):
@@ -154,6 +198,10 @@ class ProfileDataSet:
             currentRank = currentRank + 1
         print("______________________________________________")
         print("")
+
+        print("Jaccard Similarity Matrix: ")
+        self.printJaccMatrix()
+        print("_______________________________________________")
 
         # Old data printing from week one and two:
         # print("Samples Rank 1/2/3/4/5: " + str(SamplesRank1) + "/" + str(SamplesRank2) + "/" + str(SamplesRank3) + "/" + str(SamplesRank4) + "/" + str(SamplesRank5))
