@@ -20,10 +20,11 @@ def main():
                 # In the newest revision, the whole first line is passed to the dataset object
                 # DataSetProfiles.DivideLineAndCreateProfiles(line)
                 Hist1DataSet.DivideLineAndCreateProfiles(line)
+                print("Starting to read files windows...")
             # In the Event it is not the starting line (Begins the genome window intake) (1656 Bytes or 0.001656 Mb) @ line
             else:
                 # DataSetProfiles.AddWindowByLine(line, windowCount)
-                Hist1DataSet.AddWindowByLineWithRangeFilter(line, windowCount, 21700000, 24100000)
+                Hist1DataSet.AddWindowByLineWithRangeFilter(line, windowCount, 21700000, 24100000, "chr13")
                 windowCount = windowCount + 1
             lineCount = lineCount + 1
             # print("Reading Line: " + str(lineCount))

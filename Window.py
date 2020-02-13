@@ -55,7 +55,7 @@ class GenomeWindow:
 
     # Helper method for validating the window of the sample
     def isValidData(self):
-        if self.windowSize >= 100:
+        if self.windowSize >= 100 or self.windowSize == 0:
             return False
         else:
             return True

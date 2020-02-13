@@ -1,7 +1,8 @@
 from Profile import GenomeProfile as Profile
 from Window import GenomeWindow as Window
 from WindowDataSet import WindowDataSet as WSet
-
+from HeatMapWindow import heatmap
+import matplotlib.pyplot as plt
 import numpy as np
 
 ###############################################################
@@ -59,7 +60,7 @@ class ProfileDataSet:
 
     def FindAllJaccardSimilaritiesNormalized(self):
         currentRow = 0
-        currentValue = 0
+        # currentValue = 0
         totalValuesToFind = len(self.ProfileDataSet) * len(self.ProfileDataSet)
         self.ProfileJaccardMarix = []
         for profileRow in self.ProfileDataSet:
@@ -67,12 +68,16 @@ class ProfileDataSet:
             self.ProfileJaccardMarix.append(newRow)
             for profileColumn in self.ProfileDataSet:
                 self.ProfileJaccardMarix[currentRow].append(profileRow.JaccardSimlarityIndexNormalized(profileColumn))
-                currentValue = currentValue + 1
-                print("Jaccard Score Progress: " + str(currentValue) + "/" + str(totalValuesToFind))
+                # currentValue = currentValue + 1
+                # print("Jaccard Score Progress: " + str(currentValue) + "/" + str(totalValuesToFind))
             currentRow = currentRow + 1
-            if currentRow == 5:
-                break
-        np.savetxt('./DataSets/Hist1JaccardMatrix.txt', self.ProfileJaccardMarix)
+        # np.savetxt('./DataSets/Hist1JaccardMatrix.txt', self.ProfileJaccardMarix)
+        profileNames = []
+        for profile in self.ProfileDataSet:
+            profileNames.append(profile.profileID)
+        # heatmap(self.ProfileJaccardMarix, profileNames, profileNames)
+        plt.imshow(self.ProfileJaccardMarix, cmap='hot', interpolation='nearest')
+        plt.show()
 
     def printJaccMatrix(self):
         for i in range(len(self.ProfileJaccardMarix)):
@@ -93,10 +98,10 @@ class ProfileDataSet:
         else:
             print(self.DataSetName + ": Invalid Sample Window Found in data set!")
 
-    def AddWindowByLineWithRangeFilter(self, line, windowIndex, RangeStart, RangeEnd):
+    def AddWindowByLineWithRangeFilter(self, line, windowIndex, RangeStart, RangeEnd, chrName):
         # print("Adding new potential window: " + str(windowIndex))
         newWindow = Window(line)
-        if newWindow.isValidData() and int(newWindow.rowStart) <= RangeStart and int(newWindow.rowEnd) <= RangeEnd:
+        if newWindow.isValidData() and int(newWindow.rowStart) >= RangeStart and int(newWindow.rowEnd) <= RangeEnd and newWindow.sampleID == chrName:
             self.WindowSamples.addWindowByObject(newWindow)
             currentWindowIndex = self.WindowSamples.getLastIndex()
             # Loops through all of the matching profile indecies found and adds them to the profile object.
@@ -172,11 +177,6 @@ class ProfileDataSet:
             x = x + 1
         return smallestIndex
 
-
-
-
-
-
     # Method for easy display of Sample Window Properties
     def printProfileDataSetSummaryInTerminal(self):
         if self.LargestProfileIndex == -1 or self.LargestProfileIndex == -1 or self.AverageOccurrence == 0:
@@ -199,9 +199,9 @@ class ProfileDataSet:
         print("______________________________________________")
         print("")
 
-        print("Jaccard Similarity Matrix: ")
-        self.printJaccMatrix()
-        print("_______________________________________________")
+        # print("Jaccard Similarity Matrix: ")
+        # self.printJaccMatrix()
+        # print("_______________________________________________")
 
         # Old data printing from week one and two:
         # print("Samples Rank 1/2/3/4/5: " + str(SamplesRank1) + "/" + str(SamplesRank2) + "/" + str(SamplesRank3) + "/" + str(SamplesRank4) + "/" + str(SamplesRank5))

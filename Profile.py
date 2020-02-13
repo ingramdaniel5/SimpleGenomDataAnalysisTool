@@ -35,8 +35,8 @@ class GenomeProfile:
 
     def JaccardSimlarityIndexNormalized(self, otherNP):
         matches = 0
-        if len(self.IndeciesOfValidWindowSamples) < len(otherNP.IndeciesOfValidWindowSamples):
-            if len(self.IndeciesOfValidWindowSamples) != 0:
+        if self != otherNP:
+            if len(self.IndeciesOfValidWindowSamples) != 0 and len(otherNP.IndeciesOfValidWindowSamples) != 0:
                 for windowIndex in self.IndeciesOfValidWindowSamples:
                     for otherProfileWindowIndex in self.IndeciesOfValidWindowSamples:
                         if windowIndex == otherProfileWindowIndex:
@@ -45,22 +45,14 @@ class GenomeProfile:
                         elif otherProfileWindowIndex > windowIndex:
                             break
                 # print("Jaccard Score: " + str(matches/len(self.IndeciesOfValidWindowSamples)))
-                return matches/len(self.IndeciesOfValidWindowSamples)
+                if len(self.IndeciesOfValidWindowSamples) < len(otherNP.IndeciesOfValidWindowSamples):
+                    return matches/len(self.IndeciesOfValidWindowSamples)
+                else:
+                    return matches/len(otherNP.IndeciesOfValidWindowSamples)
             else:
                 return 0
         else:
-            if len(otherNP.IndeciesOfValidWindowSamples) != 0:
-                for otherProfileWindowIndex in otherNP.IndeciesOfValidWindowSamples:
-                    for windowIndex in self.IndeciesOfValidWindowSamples:
-                        if windowIndex == otherProfileWindowIndex:
-                            matches = matches + 1
-                            break
-                        elif otherProfileWindowIndex > windowIndex:
-                            break
-                # print("Jaccard Score: " + str(matches/len(self.IndeciesOfValidWindowSamples)))
-                return matches/len(otherNP.IndeciesOfValidWindowSamples)
-            else:
-                return 0
+            return 1
 
      # Boolean operators for comparing the profiles to one another:
     def __gt__(self, other):
