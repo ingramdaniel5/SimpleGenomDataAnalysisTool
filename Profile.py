@@ -21,38 +21,32 @@ class GenomeProfile:
     def GetProfileSize(self):
         return self.occuranceAmount
 
-    def JaccardSimlarityIndexUnNormalized(self, otherNP):
-        matches = 0
-        for windowIndex in self.IndeciesOfValidWindowSamples:
-            for otherProfileWindowIndex in otherNP.IndeciesOfValidWindowSamples:
-                if windowIndex == otherProfileWindowIndex:
-                    matches = matches + 1
-                    break
-                elif otherProfileWindowIndex > windowIndex:
-                    break
-        print("Jaccard Score: " + str(matches/len(self.IndeciesOfValidWindowSamples)))
-        return matches/len(self.IndeciesOfValidWindowSamples)
+    @staticmethod
+    def ProfileIsEmpty(self):
+        if len(self.IndeciesOfValidWindowSamples) != 0:
+            return True
+        else:
+            return False
+
 
     def JaccardSimlarityIndexNormalized(self, otherNP):
-        matches = 0
-        if self != otherNP:
-            if len(self.IndeciesOfValidWindowSamples) != 0 and len(otherNP.IndeciesOfValidWindowSamples) != 0:
-                for windowIndex in self.IndeciesOfValidWindowSamples:
-                    for otherProfileWindowIndex in self.IndeciesOfValidWindowSamples:
-                        if windowIndex == otherProfileWindowIndex:
-                            matches = matches + 1
-                            break
-                        elif otherProfileWindowIndex > windowIndex:
-                            break
-                # print("Jaccard Score: " + str(matches/len(self.IndeciesOfValidWindowSamples)))
-                if len(self.IndeciesOfValidWindowSamples) < len(otherNP.IndeciesOfValidWindowSamples):
-                    return matches/len(self.IndeciesOfValidWindowSamples)
-                else:
-                    return matches/len(otherNP.IndeciesOfValidWindowSamples)
+        # Determines which of the two Profiles to use as the baseline based on which is smallest:
+        if len(self.IndeciesOfValidWindowSamples) != 0 and len(otherNP.IndeciesOfValidWindowSamples) != 0:
+            if len(self.IndeciesOfValidWindowSamples) >= len(otherNP.IndeciesOfValidWindowSamples):
+                chosenSampleBase = otherNP.IndeciesOfValidWindowSamples
+                chosenSampleCompare = self.IndeciesOfValidWindowSamples
             else:
-                return 0
-        else:
+                chosenSampleBase = self.IndeciesOfValidWindowSamples
+                chosenSampleCompare = otherNP.IndeciesOfValidWindowSamples
+
+            # Generates order of Union off of that:
+            intersection = len(list(set(chosenSampleBase).intersection(chosenSampleCompare)))
+            # union = (len(chosenSampleBase) + len(chosenSampleCompare)) - intersection
+            return float(intersection) / len(chosenSampleBase)
+        elif self == otherNP:
             return 1
+        else:
+            return 0
 
      # Boolean operators for comparing the profiles to one another:
     def __gt__(self, other):

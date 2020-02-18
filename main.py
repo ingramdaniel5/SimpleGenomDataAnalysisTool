@@ -28,11 +28,16 @@ def main():
                 windowCount = windowCount + 1
             lineCount = lineCount + 1
             # print("Reading Line: " + str(lineCount))
-        print("Completed Data Extraction of file. Computing Data Summaries...")
+        print("Completed Data Extraction of file...")
+        print("Filtering empty Profiles from dataset...")
+        Hist1DataSet.FilterEmptyProfiles()
+        print("Computing Profile Data Set Summaries...")
         # DataSetProfiles.CalculateSummaryValues()
         # DataSetProfiles.printProfileDataSetSummaryInTerminal()
+        Hist1DataSet.findOptimalClustersInDataset(3, 20)
         Hist1DataSet.CalculateSummaryValues()
         Hist1DataSet.printProfileDataSetSummaryInTerminal()
+        Hist1DataSet.printAllSummaryPlots()
 
 
 if __name__ == "__main__":
