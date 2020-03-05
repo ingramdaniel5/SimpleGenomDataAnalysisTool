@@ -41,9 +41,22 @@ class WindowDataSet:
         toReturn = (self.SetCount - 1)
         return toReturn
 
+
     def analyzeDataSetAndFindMappings(self):
-        filePath = dataSetLocationDirectory + featureSpreadsheetOne
-        DataSourceFile = pd.read_excel(filePath)
-        for window in self.WindowDataSet:
-            if DataSourceFile['']
+        print("Mapping Windows to occurance in external data file...")
+        dataFile = pd.read_csv('DataSets/gam_feature_community.csv')
+
+        windowName = dataFile['name'].apply(lambda x: x.split(':')[0])
+        windowStart = dataFile['name'].apply(lambda x: x.split(':')[1].split('-')[0])
+        windowStop= dataFile['name'].apply(lambda x: x.split('-')[1])
+        isInHistOne = dataFile['Hist1']
+        isInLAD = dataFile['LAD']
+        for x in range(len(isInHistOne)):
+            if isInHistOne[x] == 1:
+                # print("found lad occurance in " + str(x))
+                self.WindowDataSet[x].LADPresence = 1
+            if isInLAD[x] == 1:
+                # print("found hist1 occurance in " + str(x))
+                self.WindowDataSet[x].HIST1_Presence = 1
+
 

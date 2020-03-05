@@ -6,12 +6,17 @@ class GenomeProfile:
     profileID = ""
     occuranceAmount = 0
     IndeciesOfValidWindowSamples = []
-
+    HistOneWindowOccurancePercentage = 0
+    LADWindowOccurancePercentage = 0
+    rank = 0
     # Constructor called as first line of the input set is read (Only available data is the name)
     def __init__(self, profileID):
         # print("Making Profile: " + profileID)
         self.profileID = profileID
         self.IndeciesOfValidWindowSamples = []
+        self.HistOneWindowOccurancePercentage = 0
+        self.LADWindowOccurancePercentage = 0
+        self.rank = 0;
 
     # Helper method called to handle the detection of a 1 in a window for this column
     def occuranceInWindowFound(self, windowIndex):

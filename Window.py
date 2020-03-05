@@ -11,14 +11,17 @@ class GenomeWindow:
     zeroCount = 0
     oneCount = 0
     HistOnePresence = False
-    LADPresence = False
+    LADPresence = 0
+    HIST1_Presence = 0
     profilePresenceIndecies = []
 
 
     # Constructor takes a row in the file as an input
     def __init__(self, line):
         self.profilePresenceIndecies = []
+        self.LADPresence = 0
         self.windowSize = 0
+        self.HIST1_Presence = 0
 
         currentProfileIndex = 0
         sampleColumn = 0
