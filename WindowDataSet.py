@@ -1,11 +1,14 @@
 from Window import GenomeWindow as WS
+import pandas as pd
+
 ###############################################################
 # Object for managing and handling Genome Sample Window
 class WindowDataSet:
 
+    dataSetLocationDirectory = "Dataset"
+    featureSpreadsheetOne = "gam_feature_community.csv"
     # Public Class Properties
     SetCount = 0
-
 
     # Constructor takes a row in the file as an input
     def __init__(self):
@@ -37,3 +40,10 @@ class WindowDataSet:
     def getLastIndex(self):
         toReturn = (self.SetCount - 1)
         return toReturn
+
+    def analyzeDataSetAndFindMappings(self):
+        filePath = dataSetLocationDirectory + featureSpreadsheetOne
+        DataSourceFile = pd.read_excel(filePath)
+        for window in self.WindowDataSet:
+            if DataSourceFile['']
+

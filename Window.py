@@ -10,7 +10,10 @@ class GenomeWindow:
     rowEnd = -1
     zeroCount = 0
     oneCount = 0
+    HistOnePresence = False
+    LADPresence = False
     profilePresenceIndecies = []
+
 
     # Constructor takes a row in the file as an input
     def __init__(self, line):
@@ -41,9 +44,6 @@ class GenomeWindow:
                     else:
                         print ("Error! unexpected Value: " + value)
             sampleColumn = sampleColumn + 1
-        # self.findRank()
-        # print("Indecies Array length = " + str(len(self.profilePresenceIndecies)))
-        # print("Window Row Size Count: " + str(self.oneCount))
 
     # Method for easy display of Sample Window Properties
     def printSampleWindowSummary(self):
