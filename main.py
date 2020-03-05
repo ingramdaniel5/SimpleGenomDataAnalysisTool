@@ -24,7 +24,7 @@ def main():
             # In the Event it is not the starting line (Begins the genome window intake) (1656 Bytes or 0.001656 Mb) @ line
             else:
                 # DataSetProfiles.AddWindowByLine(line, windowCount)
-                Hist1DataSet.AddWindowByLineWithRangeFilter(line, windowCount, 21700000, 24100000, "chr13")
+                Hist1DataSet.AddWindowByLineWithRangeFilter(line, windowCount, 21690000, 24120000, "chr13")
                 windowCount = windowCount + 1
             lineCount = lineCount + 1
             # print("Reading Line: " + str(lineCount))
@@ -32,9 +32,7 @@ def main():
         print("Filtering empty Profiles from dataset...")
         Hist1DataSet.FilterEmptyProfiles()
         print("Computing Profile Data Set Summaries...")
-        # DataSetProfiles.CalculateSummaryValues()
-        # DataSetProfiles.printProfileDataSetSummaryInTerminal()
-        Hist1DataSet.findOptimalClustersInDataset(3, 20)
+        Hist1DataSet.findOptimalClustersInDataset(3, 200)
         Hist1DataSet.CalculateSummaryValues()
         Hist1DataSet.printProfileDataSetSummaryInTerminal()
         Hist1DataSet.printAllSummaryPlots()

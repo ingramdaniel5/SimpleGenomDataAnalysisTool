@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import random
 # importing copy module
 import copy
-
+import pandas as pd
 import numpy as np
 
 ###############################################################
@@ -67,17 +67,24 @@ class ProfileDataSet:
             currentRow = currentRow + 1
         print("Normalised Jaccard Similarities and Difference Matrix Found!")
 
-    @staticmethod
-    def getGroupAverage(group):
+
+    def getGroupAverage(self, group):
         summation = 0
         clusterSize = len(group)
-        for profile in group:
-            summation = summation + profile.GetProfileSize()
+        for profileIndex in group:
+            summation = summation + self.ProfileDataSet[profileIndex].GetProfileSize()
         return summation/clusterSize
 
-    @staticmethod
-    def findGroupMediodValue(cluster, meanValue):
-        return
+    def findGroupMediodValue(self, cluster, meanValue):
+        smallestProfileSizeDeviationIndex = 0
+        currentClusterProfileIndex = 0
+        groupSize = len(cluster)
+        while currentClusterProfileIndex < groupSize:
+            if abs(self.ProfileDataSet[cluster[currentClusterProfileIndex]].GetProfileSize() - meanValue) < abs(
+                    self.ProfileDataSet[cluster[smallestProfileSizeDeviationIndex]].GetProfileSize() - meanValue):
+                smallestProfileSizeDeviationIndex = currentClusterProfileIndex
+            currentClusterProfileIndex = currentClusterProfileIndex + 1
+        return self.ProfileDataSet[cluster[smallestProfileSizeDeviationIndex]].GetProfileSize()
 
     @staticmethod
     def findGroupRange(cluster):
@@ -96,13 +103,36 @@ class ProfileDataSet:
     # Returns the index of the closest number in the array
     @staticmethod
     def getClosestIndex(group, TargetValue):
-        group = np.asarray(group)
-        idx = (np.abs(group - TargetValue)).argmin()
-        return idx
+        smallestProfileSizeDeviationIndex = 0
+        currentClusterProfileIndex = 0
+        groupSize = len(group)
+        while currentClusterProfileIndex < groupSize:
+            if abs(group[currentClusterProfileIndex].GetProfileSize() - TargetValue) < abs(group[smallestProfileSizeDeviationIndex].GetProfileSize() - TargetValue):
+                smallestProfileSizeDeviationIndex = currentClusterProfileIndex
+            currentClusterProfileIndex = currentClusterProfileIndex + 1
+        return smallestProfileSizeDeviationIndex
+
+    @staticmethod
+    def getClosestIndex_NON_PROFILE_GROUP(group, TargetValue):
+        smallestProfileSizeDeviationIndex = 0
+        currentIndex = 0
+        groupSize = len(group)
+        while currentIndex < groupSize:
+            if abs(group[currentIndex] - TargetValue) < abs(group[smallestProfileSizeDeviationIndex] - TargetValue):
+                smallestProfileSizeDeviationIndex = currentIndex
+            currentIndex = currentIndex + 1
+        return smallestProfileSizeDeviationIndex
 
     @staticmethod
     def getClosestValue(group, TargetValue):
-        return group[min(range(len(group)), key=lambda i: abs(group[i] - TargetValue))]
+        smallestProfileSizeDeviationIndex = 0
+        currentClusterProfileIndex = 0
+        groupSize = len(group)
+        while currentClusterProfileIndex < groupSize:
+            if abs(group[currentClusterProfileIndex].GetProfileSize() - TargetValue) < abs(group[smallestProfileSizeDeviationIndex].GetProfileSize() - TargetValue):
+                smallestProfileSizeDeviationIndex = currentClusterProfileIndex
+            currentClusterProfileIndex = currentClusterProfileIndex + 1
+        return group[smallestProfileSizeDeviationIndex]
 
     def findOptimalClustersInDataset(self, clusterAmount, RepAmount):
             print("Beginning Search for Optimal clustering based on given parameters...")
@@ -132,17 +162,25 @@ class ProfileDataSet:
             # Loops through desired times to try and find an optimal break down given the parameters
             currentRep = 0
             while currentRep < RepAmount:
+                print("Cluster Optimizaition: " + str(currentRep) + "/" + str(RepAmount))
                 # Loops through appending to closest cluster AKA Makes Groups...
+                currentProfile = 0
                 for profile in self.ProfileDataSet:
-                    optimalClusterIndex = ProfileDataSet.getClosestValue(currentMiddleValues, profile.GetProfileSize())
-                    self.CurrentOptimalNPClusters[optimalClusterIndex].append(copy.deepcopy(profile))
+                    targetValue = profile.GetProfileSize()
+                    optimalClusterIndex = ProfileDataSet.getClosestIndex_NON_PROFILE_GROUP(currentMiddleValues, targetValue)
+                    self.CurrentOptimalNPClusters[optimalClusterIndex].append(currentProfile)
+                    currentProfile = currentProfile + 1
 
                 # Goes through and finds the middles of all clusters
-                currentClustersAdded = 0
-                while currentClustersAdded < clusterAmount:
-                    cAverage = ProfileDataSet.getGroupAverage(self.CurrentOptimalNPClusters[currentClustersAdded])
-                    currentMiddleValues[currentClustersAdded] = ProfileDataSet.findGroupMediodValue(self.CurrentOptimalNPClusters[currentClustersAdded], cAverage)
-                    currentClustersAdded = currentClustersAdded + 1
+                currentMiddleValues = []
+                currentMiddleValueReplaced = 0
+                while currentMiddleValueReplaced < clusterAmount:
+                    cAverage = self.getGroupAverage(self.CurrentOptimalNPClusters[currentMiddleValueReplaced])
+                    newCenterMediodValue = self.findGroupMediodValue(self.CurrentOptimalNPClusters[currentMiddleValueReplaced], cAverage)
+                    currentMiddleValues.append(newCenterMediodValue)
+                    currentMiddleValueReplaced = currentMiddleValueReplaced + 1
+
+                    # Resets all of the clusters for another optomization:
                 if currentRep + 1 != RepAmount:
                     # Before restarting clears the existing clusters if not on exit pass
                     self.CurrentOptimalNPClusters = []
@@ -151,18 +189,16 @@ class ProfileDataSet:
                     while clustersAdded < clusterAmount:
                         newSubClusterArray = []
                         self.CurrentOptimalNPClusters.append(newSubClusterArray)
-                        clusterAmount = clusterAmount + 1
+                        clustersAdded = clustersAdded + 1
                 currentRep = currentRep + 1
             print("Attempt amount to find optimal clusters reached!")
-
-
 
     @staticmethod
     def print2DMatrix(matrix):
         for i in range(len(matrix)):
             for j in range(len(matrix[i])):
-                print(matrix[i][j], end=' ')
-            print()
+                print(matrix[i][j].profileID, end=' ')
+            print('\n\n')
 
 
     def FilterEmptyProfiles(self):
@@ -215,7 +251,6 @@ class ProfileDataSet:
             occurrenceSum = occurrenceSum + profile.GetProfileSize()
         return occurrenceSum /(len(self.ProfileDataSet))
 
-
     def CalculateProfileRanks(self, RankCount):
         # Find smallest index up here because it is used twice:
         smallestIndex = self.FindSmallestProfileIndex()
@@ -238,7 +273,7 @@ class ProfileDataSet:
             while (rank * ZonesSize) < self.ProfileDataSet[CurrentPIndex].GetProfileSize() and rank <= len(self.ProfileRankIndecies):
                 # Increment through all the ranks until the occurance amount is less then the current rank's limit
                 rank = rank + 1
-            #print("Rank of profile found:  " + str(rank))
+            # print("Rank of profile found:  " + str(rank))
             self.ProfileRankIndecies[rank - 1].append(CurrentPIndex)
             CurrentPIndex = CurrentPIndex + 1
 
@@ -303,4 +338,43 @@ class ProfileDataSet:
             JD_plot.set_autoscalex_on(True)
             plt.imshow(self.ProfileJaccardDifferenceMarix)
             plt.colorbar(orientation='vertical')
+
+            gX_Values = []
+            gY_Values = []
+            clusterColors = ["red", "green", "blue", "orange", "purple", "brown", "pink", "gray", "olive", "cyan", "yellow"]
+            clusterTitles = []
+            currentCluster = 1
+            for Cluster in self.CurrentOptimalNPClusters:
+                clusterTitles.append("Cluster " + str(currentCluster))
+                new_gx = []
+                new_gy = []
+                # Makeup Distance of scatter plots:
+                # while len(new_gx) < len(gY_Values):
+                #    new_gx.append(0)
+                for profileIndex in Cluster:
+                    for windowIndex in self.ProfileDataSet[profileIndex].IndeciesOfValidWindowSamples:
+                        new_gx.append(windowIndex)
+                        new_gy.append(profileIndex)
+                currentCluster = currentCluster + 1
+                gX_Values.append(new_gx)
+                gY_Values.append(new_gy)
+
+            # Compute the clusters 2d arrays
+            fig = plt.figure(num=3, figsize=(6, 6), dpi=150)
+            ax = fig.add_subplot(111)
+
+            # Counting values to increment through cluster properties:
+            plottedClusters = 0
+            currentColor = 0
+            clusterAmmount = len(self.CurrentOptimalNPClusters)
+            colorArrayLen = len(clusterColors)
+            # While loop to plot clusters:
+            while plottedClusters < clusterAmmount:
+                if currentColor >= colorArrayLen:
+                    currentColor = 0
+                ax.scatter(gX_Values[plottedClusters], gY_Values[plottedClusters], alpha=.8, c=clusterColors[currentColor], edgecolors='none', s=30, label=clusterTitles[plottedClusters])
+                plottedClusters = plottedClusters + 1
+                currentColor = currentColor + 1
+            plt.title('Optimal Cluster Results V1.0')
+            plt.legend(loc=2)
         plt.show()
