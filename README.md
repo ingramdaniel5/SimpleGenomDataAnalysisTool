@@ -6,5 +6,6 @@ Designed By:
 
 
 # Installs Required:
-pip3 install numpy
-pip3 install matplotlib
+pip install numpy
+pip install matplotlib
+pip install plotly==4.5.4

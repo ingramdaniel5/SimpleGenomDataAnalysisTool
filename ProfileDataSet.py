@@ -1,7 +1,7 @@
 from Profile import GenomeProfile as Profile
 from Window import GenomeWindow as Window
 from WindowDataSet import WindowDataSet as WSet
-from HeatMapWindow import heatmap
+from DataVisualiser import DataVisualiser as DataVis
 import matplotlib.pyplot as plt
 import random
 # importing copy module
@@ -241,6 +241,8 @@ class ProfileDataSet:
         self.FindAllJaccardMatriciesNormalized()
         self.WindowSamples.analyzeDataSetAndFindMappings()
         self.findAllProfileSamplePercentagesForExternalFile()
+        self.WindowSamples.CalculateLinkageMatricies(len(self.ProfileDataSet))
+        self.WindowSamples.findAllCentralityValues()
 
     # WARNING! Screws up index tracking for sub components
     def SortSetBySize(self):
@@ -317,6 +319,7 @@ class ProfileDataSet:
             # print ("Hist percent = " + str(self.ProfileDataSet[x].HistOneWindowOccurancePercentage))
             # print("LAD percent = " + str(self.ProfileDataSet[x].LADWindowOccurancePercentage))
 
+
     # Method for easy display of Sample Window Properties
     def printProfileDataSetSummaryInTerminal(self):
         if self.LargestProfileIndex == -1 or self.LargestProfileIndex == -1 or self.AverageOccurrence == 0:
@@ -338,10 +341,30 @@ class ProfileDataSet:
             currentRank = currentRank + 1
         print("______________________________________________")
         print("")
+        print("")
+        print("")
+        print("")
+        print("Window Sample Centrality Results:")
+        print("Mean Centrality: " + str(self.WindowSamples.MeanCentralityOfWindows))
+        print("")
+        print("Most Central Window:  ")
+        self.WindowSamples.WindowDataSet[self.WindowSamples.MaxCentralityIndexOfWindows].printSampleWindowSummary()
+        print("Least Central Window:  ")
+        self.WindowSamples.WindowDataSet[self.WindowSamples.MinCentralityIndexOfWindows].printSampleWindowSummary()
+        print("List ordered by centrality: ")
+        self.WindowSamples.printSortedCentralityList()
 
         # Displays all of the data for each of the calculated 2D Matrices:
 
     def printAllSummaryPlots(self):
+        # Testing of implementing new display class:
+        # Generate heat map for Linkage Disequilibrium Matrix of windows:
+        # Example Method:
+        # def GenerateHeatMap(Title, X_AxisTitle, Y_AxisTitle, TwoDimMatrix, PerimeterValues):
+        DataVis.GenerateHeatMap("Normalized Linkage Disequilibrium Matrix of Windows Data Set:", "Windows", "Windows", self.WindowSamples.LinkageDisequilibriumMatrix, self.WindowSamples.GetAllWindowIndecies())
+
+
+
         IndeciesByClusterOrder = []
         allNamesInClusters = []
         # LAD DATA
@@ -389,17 +412,16 @@ class ProfileDataSet:
                             specs=[[{}],
                                    [{}],
                                    [{}]])
-        fig3.add_trace(go.Heatmap( y=allNamesInClusters[0],x=allNamesInClusters[0], z=ClusterAllJacquardMatricies[0], colorscale='Spectral',reversescale=True, showscale=False), 1, 1)
+        fig3.add_trace(go.Heatmap(y=allNamesInClusters[0],x=allNamesInClusters[0], z=ClusterAllJacquardMatricies[0], colorscale='Spectral',reversescale=True, showscale=False), 1, 1)
         fig3.add_trace(go.Heatmap(y=allNamesInClusters[1], x=allNamesInClusters[1], z=ClusterAllJacquardMatricies[1], colorscale='Spectral', reversescale=True, showscale=False), 2, 1)
         fig3.add_trace(go.Heatmap(y=allNamesInClusters[2], x=allNamesInClusters[2], z=ClusterAllJacquardMatricies[2], colorscale='Spectral', reversescale=True, showscale=False), 3, 1)
         fig3.show()
 
         # Cluster Heatmap plotting individual:
-        fig4 = make_subplots(rows=1, cols=1, vertical_spacing=0.05, shared_xaxes=False,
-                             specs=[[{}]])
-        fig4.add_trace(go.Heatmap(y=AllNames, x=AllNames, z=AllJacqs,
-                                  colorscale='Spectral', reversescale=True, showscale=False), 1, 1)
+        fig4 = make_subplots(rows=1, cols=1, vertical_spacing=0.05, shared_xaxes=False, specs=[[{}]])
+        fig4.add_trace(go.Heatmap(y=AllNames, x=AllNames, z=AllJacqs, colorscale='Spectral', reversescale=True, showscale=False), 1, 1)
         fig4.show()
+
         # HIST1 PLOTTING
         fig = make_subplots(rows=2, cols=1, vertical_spacing=0.1,
                             subplot_titles=('NPs vs Feature by Cluster for HIST1 and LAD',),

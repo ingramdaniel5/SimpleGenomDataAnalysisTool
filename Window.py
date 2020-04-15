@@ -14,6 +14,7 @@ class GenomeWindow:
     LADPresence = 0
     HIST1_Presence = 0
     profilePresenceIndecies = []
+    DegreeOfCentrality = 0
 
 
     # Constructor takes a row in the file as an input
@@ -53,7 +54,8 @@ class GenomeWindow:
         print("ID: " + self.sampleID)
         print("Sample Start/End: " + str(self.rowStart) + "/" + str(self.rowEnd))
         print("Sample Window Size: " + str(self.windowSize))
-        print("Rank: " + str(self.findRank()))
+        # print("Rank: " + str(self.findRank()))
+        print("Degree of Centrality: " + str(self.DegreeOfCentrality))
         print("")
 
     # Helper method for validating the window of the sample
@@ -62,6 +64,42 @@ class GenomeWindow:
             return False
         else:
             return True
+
+
+
+    # Window Class:
+    # Helper method that returns the cosegregation value
+    def findCosegregation(self, otherWindow, ProfileCount):
+        occuranceMatches = 0
+        maxProfileOccurances = self.profileOA()
+        if otherWindow.profileOA() > maxProfileOccurances:
+            maxProfileOccurances = otherWindow.profileOA()
+        for profile in self.profilePresenceIndecies:
+            if profile in otherWindow.profilePresenceIndecies:
+                occuranceMatches = occuranceMatches + 1
+        # FORMULA FOR LINKAGE MATRICIES:
+        result = (occuranceMatches/maxProfileOccurances)#  - (self.profileOA() * otherWindow.profileOA())
+        return result
+
+    # Helper method to get window length (Profile occurance ammount)
+    def profileOA(self):
+        return len(self.profilePresenceIndecies)
+
+
+    # def FindCentrality(self, otherWindow, WindowCount):
+    #     occuranceMatches = 0
+    #     maxProfileOccurances = self.profileOA()
+    #     if otherWindow.profileOA() > maxProfileOccurances:
+    #         maxProfileOccurances = otherWindow.profileOA()
+    #     for profile in self.profilePresenceIndecies:
+    #         if profile in otherWindow.profilePresenceIndecies:
+    #             occuranceMatches = occuranceMatches + 1
+    #     # FORMULA FOR Normalized Linkage LINKAGE MATRICIES:
+    #     self.DegreeOfCentrality = (occuranceMatches / maxProfileOccurances)/ (WindowCount - 1)
+
+
+
+
 
     # Boolean operators for comparing the windows to one another:
     def __gt__(self, other):
