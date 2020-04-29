@@ -1,16 +1,12 @@
+import random
+
 from Profile import GenomeProfile as Profile
 from Window import GenomeWindow as Window
 from WindowDataSet import WindowDataSet as WSet
 from DataVisualiser import DataVisualiser as DataVis
-import matplotlib.pyplot as plt
-import random
+
+
 # importing copy module
-import copy
-import pandas as pd
-import numpy as np
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
-import plotly.express as px
 ###############################################################
 # Object for managing and handling a group od Genome Profiles
 class ProfileDataSet:
@@ -364,108 +360,111 @@ class ProfileDataSet:
         DataVis.GenerateHeatMap("Normalized Linkage Disequilibrium Matrix of Windows Data Set:", "Windows", "Windows", self.WindowSamples.LinkageDisequilibriumMatrix, self.WindowSamples.GetAllWindowIndecies())
 
 
-
-        IndeciesByClusterOrder = []
-        allNamesInClusters = []
-        # LAD DATA
-        LADallClusterPercentages = []
-        LADcombinedClusterPercentages = []
-        #HIST1 DATA
-        HISTallClusterPercentages = []
-        HISTcombinedClusterPercentages = []
-
-        # Radial to Cluster
-        ClusterAllRadialRankings = []
-
-        #ClusterJacquardMatricies:
-        ClusterAllJacquardMatricies = []
-
-        AllNames = []
-        AllJacqs = []
-
-        for cluster in self.CurrentOptimalNPClusters:
-            newHISTClusterPercentage = []
-            newLADClusterPercentage = []
-            newClusterRadRank = []
-            newJacquardMatricies = []
-            newClusterNames = []
-
-            for profileIndex in cluster:
-                newHISTClusterPercentage.append(self.ProfileDataSet[profileIndex].HistOneWindowOccurancePercentage)
-                HISTcombinedClusterPercentages.append(self.ProfileDataSet[profileIndex].HistOneWindowOccurancePercentage)
-                newLADClusterPercentage.append(self.ProfileDataSet[profileIndex].LADWindowOccurancePercentage)
-                LADcombinedClusterPercentages.append(self.ProfileDataSet[profileIndex].LADWindowOccurancePercentage)
-                IndeciesByClusterOrder.append(profileIndex)
-                newClusterRadRank.append(self.ProfileDataSet[profileIndex].rank)
-                newJacquardMatricies.append(self.ProfileJaccardSimilarityMarix[profileIndex])
-                newClusterNames.append(self.ProfileDataSet[profileIndex].profileID)
-                AllNames.append(self.ProfileDataSet[profileIndex].profileID)
-                AllJacqs.append(self.ProfileJaccardSimilarityMarix[profileIndex])
-            HISTallClusterPercentages.append(newHISTClusterPercentage)
-            LADallClusterPercentages.append(newLADClusterPercentage)
-            ClusterAllRadialRankings.append(newClusterRadRank)
-            ClusterAllJacquardMatricies.append(newJacquardMatricies)
-            allNamesInClusters.append(newClusterNames)
-
-        # Cluster Heatmap plotting individual:
-        fig3 = make_subplots(rows=3, cols=1, vertical_spacing=0.05, shared_xaxes=False,
-                            specs=[[{}],
-                                   [{}],
-                                   [{}]])
-        fig3.add_trace(go.Heatmap(y=allNamesInClusters[0],x=allNamesInClusters[0], z=ClusterAllJacquardMatricies[0], colorscale='Spectral',reversescale=True, showscale=False), 1, 1)
-        fig3.add_trace(go.Heatmap(y=allNamesInClusters[1], x=allNamesInClusters[1], z=ClusterAllJacquardMatricies[1], colorscale='Spectral', reversescale=True, showscale=False), 2, 1)
-        fig3.add_trace(go.Heatmap(y=allNamesInClusters[2], x=allNamesInClusters[2], z=ClusterAllJacquardMatricies[2], colorscale='Spectral', reversescale=True, showscale=False), 3, 1)
-        fig3.show()
-
-        # Cluster Heatmap plotting individual:
-        fig4 = make_subplots(rows=1, cols=1, vertical_spacing=0.05, shared_xaxes=False, specs=[[{}]])
-        fig4.add_trace(go.Heatmap(y=AllNames, x=AllNames, z=AllJacqs, colorscale='Spectral', reversescale=True, showscale=False), 1, 1)
-        fig4.show()
-
-        # HIST1 PLOTTING
-        fig = make_subplots(rows=2, cols=1, vertical_spacing=0.1,
-                            subplot_titles=('NPs vs Feature by Cluster for HIST1 and LAD',),
-                            specs=[[{}], [{}]])
-        clrs = px.colors.sequential.Viridis
-        fig.add_trace(go.Box(y=HISTcombinedClusterPercentages, name='Hist1 Total', marker_color='royalblue', boxpoints='all'), 1, 1)
-        fig.add_trace(
-        go.Box(y=HISTallClusterPercentages[0], name='Hist1 (cluster 1)', marker_color=clrs[1],
-               boxpoints='all'), 1, 1)
-        fig.add_trace(
-         go.Box(y=HISTallClusterPercentages[1], name='Hist1 (cluster 2)', marker_color=clrs[3],
-                boxpoints='all'), 1, 1)
-        fig.add_trace(
-         go.Box(y=HISTallClusterPercentages[2], name='Hist1 (cluster 3)', marker_color=clrs[5],
-                boxpoints='all'), 1, 1)
-
-        # LAD1 PLOTTING
-        fig.add_trace(go.Box(y=LADcombinedClusterPercentages, name='LAD Total', marker_color='royalblue', boxpoints='all'), 2, 1)
-        fig.add_trace(go.Box(y=LADallClusterPercentages[0], name='LAD (cluster 1)', marker_color=clrs[1],
-                             boxpoints='all'), 2, 1)
-        fig.add_trace(go.Box(y=LADallClusterPercentages[1], name='LAD (cluster 2)', marker_color=clrs[3],
-                             boxpoints='all'), 2, 1)
-        fig.add_trace(go.Box(y=LADallClusterPercentages[2], name='LAD (cluster 3)', marker_color=clrs[5],
-                             boxpoints='all'), 2, 1)
-        fig.update_layout(height=600, title_text="<b>Box Plots: Feature Table</b>", showlegend=False,
-                          yaxis_tickformat='%')
-        fig.update_yaxes(title_text="Percent Hist1 Content", row=1, col=1)
-
-        fig.update_yaxes(title_text="Percent LAD Content", row=2, col=1, tickformat='%')
-        fig.update_xaxes(title_text="Clusters", row=2, col=1)
-        fig.show()
-
-        # Radial plotting based on clusters:
-        fig2 = go.Figure()
-        fig2.add_trace(go.Violin(y=ClusterAllRadialRankings[0], name='Cluster 1', marker_color=clrs[1],
-                                    points='all', box_visible=True, meanline_visible=True))
-        fig2.add_trace(go.Violin(y=ClusterAllRadialRankings[1], name='Cluster 2', marker_color=clrs[3],
-                                points='all', box_visible=True, meanline_visible=True))
-        fig2.add_trace(go.Violin(y=ClusterAllRadialRankings[2], name='Cluster 3', marker_color=clrs[5],
-                                points='all', box_visible=True, meanline_visible=True))
-        fig2.update_layout(yaxis_title='Radial score', title_text="<b>Cluster Radials: Continuous</b>")
-        fig2.show()
+        # Here is where the community generating method is called:
+        self.WindowSamples.getSetCommunityAmountAndDisplayResults(5)
 
 
+        # IndeciesByClusterOrder = []
+        # allNamesInClusters = []
+        # # LAD DATA
+        # LADallClusterPercentages = []
+        # LADcombinedClusterPercentages = []
+        # #HIST1 DATA
+        # HISTallClusterPercentages = []
+        # HISTcombinedClusterPercentages = []
+        #
+        # # Radial to Cluster
+        # ClusterAllRadialRankings = []
+        #
+        # #ClusterJacquardMatricies:
+        # ClusterAllJacquardMatricies = []
+        #
+        # AllNames = []
+        # AllJacqs = []
+        #
+        # for cluster in self.CurrentOptimalNPClusters:
+        #     newHISTClusterPercentage = []
+        #     newLADClusterPercentage = []
+        #     newClusterRadRank = []
+        #     newJacquardMatricies = []
+        #     newClusterNames = []
+        #
+        #     for profileIndex in cluster:
+        #         newHISTClusterPercentage.append(self.ProfileDataSet[profileIndex].HistOneWindowOccurancePercentage)
+        #         HISTcombinedClusterPercentages.append(self.ProfileDataSet[profileIndex].HistOneWindowOccurancePercentage)
+        #         newLADClusterPercentage.append(self.ProfileDataSet[profileIndex].LADWindowOccurancePercentage)
+        #         LADcombinedClusterPercentages.append(self.ProfileDataSet[profileIndex].LADWindowOccurancePercentage)
+        #         IndeciesByClusterOrder.append(profileIndex)
+        #         newClusterRadRank.append(self.ProfileDataSet[profileIndex].rank)
+        #         newJacquardMatricies.append(self.ProfileJaccardSimilarityMarix[profileIndex])
+        #         newClusterNames.append(self.ProfileDataSet[profileIndex].profileID)
+        #         AllNames.append(self.ProfileDataSet[profileIndex].profileID)
+        #         AllJacqs.append(self.ProfileJaccardSimilarityMarix[profileIndex])
+        #     HISTallClusterPercentages.append(newHISTClusterPercentage)
+        #     LADallClusterPercentages.append(newLADClusterPercentage)
+        #     ClusterAllRadialRankings.append(newClusterRadRank)
+        #     ClusterAllJacquardMatricies.append(newJacquardMatricies)
+        #     allNamesInClusters.append(newClusterNames)
+        #
+        # # Cluster Heatmap plotting individual:
+        # fig3 = make_subplots(rows=3, cols=1, vertical_spacing=0.05, shared_xaxes=False,
+        #                     specs=[[{}],
+        #                            [{}],
+        #                            [{}]])
+        # fig3.add_trace(go.Heatmap(y=allNamesInClusters[0],x=allNamesInClusters[0], z=ClusterAllJacquardMatricies[0], colorscale='Spectral',reversescale=True, showscale=False), 1, 1)
+        # fig3.add_trace(go.Heatmap(y=allNamesInClusters[1], x=allNamesInClusters[1], z=ClusterAllJacquardMatricies[1], colorscale='Spectral', reversescale=True, showscale=False), 2, 1)
+        # fig3.add_trace(go.Heatmap(y=allNamesInClusters[2], x=allNamesInClusters[2], z=ClusterAllJacquardMatricies[2], colorscale='Spectral', reversescale=True, showscale=False), 3, 1)
+        # fig3.show()
+        #
+        # # Cluster Heatmap plotting individual:
+        # fig4 = make_subplots(rows=1, cols=1, vertical_spacing=0.05, shared_xaxes=False, specs=[[{}]])
+        # fig4.add_trace(go.Heatmap(y=AllNames, x=AllNames, z=AllJacqs, colorscale='Spectral', reversescale=True, showscale=False), 1, 1)
+        # fig4.show()
+        #
+        # # HIST1 PLOTTING
+        # fig = make_subplots(rows=2, cols=1, vertical_spacing=0.1,
+        #                     subplot_titles=('NPs vs Feature by Cluster for HIST1 and LAD',),
+        #                     specs=[[{}], [{}]])
+        # clrs = px.colors.sequential.Viridis
+        # fig.add_trace(go.Box(y=HISTcombinedClusterPercentages, name='Hist1 Total', marker_color='royalblue', boxpoints='all'), 1, 1)
+        # fig.add_trace(
+        # go.Box(y=HISTallClusterPercentages[0], name='Hist1 (cluster 1)', marker_color=clrs[1],
+        #        boxpoints='all'), 1, 1)
+        # fig.add_trace(
+        #  go.Box(y=HISTallClusterPercentages[1], name='Hist1 (cluster 2)', marker_color=clrs[3],
+        #         boxpoints='all'), 1, 1)
+        # fig.add_trace(
+        #  go.Box(y=HISTallClusterPercentages[2], name='Hist1 (cluster 3)', marker_color=clrs[5],
+        #         boxpoints='all'), 1, 1)
+        #
+        # # LAD1 PLOTTING
+        # fig.add_trace(go.Box(y=LADcombinedClusterPercentages, name='LAD Total', marker_color='royalblue', boxpoints='all'), 2, 1)
+        # fig.add_trace(go.Box(y=LADallClusterPercentages[0], name='LAD (cluster 1)', marker_color=clrs[1],
+        #                      boxpoints='all'), 2, 1)
+        # fig.add_trace(go.Box(y=LADallClusterPercentages[1], name='LAD (cluster 2)', marker_color=clrs[3],
+        #                      boxpoints='all'), 2, 1)
+        # fig.add_trace(go.Box(y=LADallClusterPercentages[2], name='LAD (cluster 3)', marker_color=clrs[5],
+        #                      boxpoints='all'), 2, 1)
+        # fig.update_layout(height=600, title_text="<b>Box Plots: Feature Table</b>", showlegend=False,
+        #                   yaxis_tickformat='%')
+        # fig.update_yaxes(title_text="Percent Hist1 Content", row=1, col=1)
+        #
+        # fig.update_yaxes(title_text="Percent LAD Content", row=2, col=1, tickformat='%')
+        # fig.update_xaxes(title_text="Clusters", row=2, col=1)
+        # fig.show()
+        #
+        # # Radial plotting based on clusters:
+        # fig2 = go.Figure()
+        # fig2.add_trace(go.Violin(y=ClusterAllRadialRankings[0], name='Cluster 1', marker_color=clrs[1],
+        #                             points='all', box_visible=True, meanline_visible=True))
+        # fig2.add_trace(go.Violin(y=ClusterAllRadialRankings[1], name='Cluster 2', marker_color=clrs[3],
+        #                         points='all', box_visible=True, meanline_visible=True))
+        # fig2.add_trace(go.Violin(y=ClusterAllRadialRankings[2], name='Cluster 3', marker_color=clrs[5],
+        #                         points='all', box_visible=True, meanline_visible=True))
+        # fig2.update_layout(yaxis_title='Radial score', title_text="<b>Cluster Radials: Continuous</b>")
+        # fig2.show()
+        #
+        #
         # Demo one plots (OLD)
         # if len(self.ProfileJaccardSimilarityMarix) != 0:
         #     JS_display = plt.figure(num=1, figsize=(6, 6), dpi=150)

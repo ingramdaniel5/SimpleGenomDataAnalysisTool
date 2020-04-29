@@ -1,5 +1,6 @@
 from Window import GenomeWindow as WS
 import pandas as pd
+from DataVisualiser import DataVisualiser as DataVis
 
 ###############################################################
 # Object for managing and handling Genome Sample Window
@@ -21,6 +22,16 @@ class WindowDataSet:
     def __init__(self):
         self.SetCount = 0
         self.WindowDataSet = []
+
+    @staticmethod
+    def print2D_arry(array):
+        print("")
+        print("")
+        for sA in array:
+            rowS = ""
+            for item in sA:
+                rowS = rowS + str(item) + " "
+            print(rowS)
 
     # Helper method for validating the window of the sample
     def isValidData(self, window):
@@ -107,6 +118,98 @@ class WindowDataSet:
         newlist = sorted(self.WindowDataSet, key=lambda x: x.DegreeOfCentrality, reverse=True)
         for window in newlist:
             print ("Centrality: " + str(window.DegreeOfCentrality) + "  |  Window Start/End: " + str(window.rowStart) + "/" + str(window.rowEnd))
+
+    def getSortedCentralityList(self):
+        newlist = sorted(self.WindowDataSet, key=lambda x: x.DegreeOfCentrality, reverse=True)
+        return newlist
+
+    def getSetCommunityAmountAndDisplayResults(self, communityCount):
+        print("")
+        print("")
+        print("Generating " + str(communityCount) + " communities....")
+        orderedList = self.getSortedCentralityList()
+        currentCom = 1
+        GeneratedComs = []
+        nextCommunity = []
+        while currentCom <= communityCount:
+            # print("Generating Community # : " + str(currentCom + 1))
+            nextCommunity = self.getCommunitiesSetByCenterNodeAndPrintSummaryData(orderedList[currentCom])
+            # print("Generated community length: " + str(len(nextCommunity)))
+            # print("Displaying Community 2D visualisation....")
+            titleString = "Community #" + str(currentCom) + ":"
+            currentCom = currentCom + 1
+            DataVis.GenerateBinaryCommunityHeatMap(titleString, "Windows", "Windows", nextCommunity, self.GetAllWindowIndecies())
+        # Resets current coms to
+
+
+    def findNeighborsFromLinkageTable(self):
+        gridDimensions = len(self.LinkageDisequilibriumMatrix)
+        x = 0
+        while x < gridDimensions:
+            y = 0
+            while y < gridDimensions:
+                if self.LinkageDisequilibriumMatrix[x][y] > self.MeanCentralityOfWindows:
+                    self.WindowDataSet[x].NeighborIndecies.append(y)
+                y = y + 1
+            x = x + 1
+
+
+
+    def getCommunitiesSetByCenterNodeAndPrintSummaryData(self, centerNode):
+        self.findNeighborsFromLinkageTable()
+        communityNodeMembers = []
+        # Adds the new node to the list of current members
+        # Defines the grid used to show the community
+        newCommunity = []
+
+        # Summary data tracked:
+        communitySize = 0
+        communityHistOneCount = 0
+        communityLADCount = 0
+
+        # Calculates the dimensions of the community grid
+        communityDimensions = len(self.WindowDataSet)
+        x = 1
+        while x < communityDimensions:
+            newCommunityRow = []
+            y = 1
+            while y < communityDimensions:
+                # Checks if the current node has a shared occurance of a community node member
+                if y in centerNode.NeighborIndecies or x in centerNode.NeighborIndecies:
+                    newCommunityRow.append(1)
+                    # Updates summary totals:
+                    communitySize = communitySize + 1
+                    if self.WindowDataSet[y].LADPresence == 1:
+                        communityLADCount = communityLADCount + 1
+                    if self.WindowDataSet[y].HIST1_Presence == 1:
+                        communityHistOneCount = communityHistOneCount + 1
+                    if y not in communityNodeMembers:
+                        communityNodeMembers.append(y)
+                else:
+                    newCommunityRow.append(0)
+                y = y + 1
+            newCommunity.append(newCommunityRow)
+            x = x + 1
+        # Here we print out summary results before returning the 2d visualsation grid:
+        # WindowDataSet.print2D_arry(newCommunity)
+        print("Community Summary Data:")
+        print("Community Size - " + str(len(newCommunity)) + "X" + str(len(newCommunity[0])))
+        print("Community Count - " + str(communitySize))
+        print("Community Percentage Hist1 - " + str(communityHistOneCount/communitySize))
+        print("Community Percentage LAD - " + str(communityLADCount/communitySize))
+        print("Community Member List: ")
+        comListString = ""
+        memberNum = 1
+        z = 0
+        while z < len(communityNodeMembers):
+            comListString = comListString + "Member #" + str(memberNum) + ":" + str(self.WindowDataSet[communityNodeMembers[z]].rowStart) + "/" + str(self.WindowDataSet[communityNodeMembers[z]].rowEnd) + "; "
+            z = z + 1
+            memberNum = memberNum + 1
+        print(comListString)
+        return newCommunity
+
+
+
 
     def analyzeDataSetAndFindMappings(self):
         print("Mapping Windows to occurance in external data file...")
